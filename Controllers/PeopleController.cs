@@ -26,7 +26,7 @@ namespace MedicalClinicWebApp.Controllers
         public async Task<IActionResult> Index(bool sortByFirstName = false, bool sortByLastName = false)
         {
             if (sortByFirstName)    return View(await _context.Person.OrderBy(p => p.FirstName).ToListAsync());
-            if (sortByFirstName)    return View(await _context.Person.OrderBy(p => p.LastName).ToListAsync());
+            if (sortByLastName)    return View(await _context.Person.OrderBy(p => p.LastName).ToListAsync());
             return View(await _context.Person.ToListAsync());
         }
 
@@ -39,9 +39,13 @@ namespace MedicalClinicWebApp.Controllers
 
         // POST: People/SearchResults
         [Authorize]
-        public async Task<IActionResult> SearchResults(string pesel)
+        public async Task<IActionResult> SearchResults(string? pesel = null, string? firstName = null, string? lastName = null)
         {
-            return View("Index", await _context.Person.Where(p => p.Pesel.Equals(pesel)).ToListAsync());
+            return View("Index", await _context.Person.Where(
+                p =>
+                    (pesel == null || pesel.Equals(p.Pesel))
+                &&  (firstName == null || firstName.Equals(p.FirstName))
+                &&  (lastName == null || lastName.Equals(p.LastName))).ToListAsync());
         }
 
         // GET: People/Details/5
