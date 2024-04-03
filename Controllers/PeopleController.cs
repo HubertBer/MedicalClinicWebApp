@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MedicalClinicWebApp.Data;
 using MedicalClinicWebApp.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Collections.Immutable;
 
 namespace MedicalClinicWebApp.Controllers
 {
@@ -20,12 +22,30 @@ namespace MedicalClinicWebApp.Controllers
         }
 
         // GET: People
-        public async Task<IActionResult> Index()
+        [Authorize]
+        public async Task<IActionResult> Index(bool sortByFirstName = false, bool sortByLastName = false)
         {
+            if (sortByFirstName)    return View(await _context.Person.OrderBy(p => p.FirstName).ToListAsync());
+            if (sortByFirstName)    return View(await _context.Person.OrderBy(p => p.LastName).ToListAsync());
             return View(await _context.Person.ToListAsync());
         }
 
+        // GET: People/Search
+        [Authorize]
+        public async Task<IActionResult> Search()
+        {
+            return View();
+        }
+
+        // POST: People/SearchResults
+        [Authorize]
+        public async Task<IActionResult> SearchResults(string pesel)
+        {
+            return View("Index", await _context.Person.Where(p => p.Pesel.Equals(pesel)).ToListAsync());
+        }
+
         // GET: People/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(string id)
         {
             if (id == null)
@@ -44,6 +64,7 @@ namespace MedicalClinicWebApp.Controllers
         }
 
         // GET: People/Create
+        [Authorize]
         public IActionResult Create()
         {
             return View();
@@ -54,6 +75,7 @@ namespace MedicalClinicWebApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("Pesel,FirstName,LastName,Street,City,ZipCode")] Person person)
         {
             if (ModelState.IsValid)
@@ -66,6 +88,7 @@ namespace MedicalClinicWebApp.Controllers
         }
 
         // GET: People/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null)
@@ -86,6 +109,7 @@ namespace MedicalClinicWebApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(string id, [Bind("Pesel,FirstName,LastName,Street,City,ZipCode")] Person person)
         {
             if (id != person.Pesel)
@@ -117,6 +141,7 @@ namespace MedicalClinicWebApp.Controllers
         }
 
         // GET: People/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -137,6 +162,7 @@ namespace MedicalClinicWebApp.Controllers
         // POST: People/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var person = await _context.Person.FindAsync(id);
